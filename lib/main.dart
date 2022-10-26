@@ -54,8 +54,8 @@ class _MyHomePageState extends State<MyHomePage> {
       if (ReturnCode.isSuccess(returnCode)) {
         if (total == (index + 1)) {
           _counter = 'complete';
+          setState(() {});
         }
-        setState(() {});
       } else if (ReturnCode.isCancel(returnCode)) {
         _counter = 'cancel';
         setState(() {});
