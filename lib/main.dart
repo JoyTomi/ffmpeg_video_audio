@@ -29,7 +29,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String _counter = '';
+  List<String> resultStrs = [];
   Future<void> openFileA() async {
     const XTypeGroup mp4TypeGroup = XTypeGroup(
       label: 'MP4s',
@@ -38,6 +38,10 @@ class _MyHomePageState extends State<MyHomePage> {
     openFiles(acceptedTypeGroups: <XTypeGroup>[
       mp4TypeGroup,
     ]).then((files) {
+      resultStrs = [];
+      for (var element in files) {
+        resultStrs.add(element.name);
+      }
       files.asMap().forEach((index, file) {
         save(file, index, files.length);
       });
@@ -47,20 +51,22 @@ class _MyHomePageState extends State<MyHomePage> {
   void save(XFile file, int index, int total) {
     final path = file.path;
     final name = file.name.replaceAll(RegExp('mp4'), 'm4a');
+    resultStrs[index] += ':start.......';
     FFmpegKit.execute(
             '-i $path -vn -acodec copy /Users/joytomi/downloads/$name')
         .then((session) async {
       final returnCode = await session.getReturnCode();
       if (ReturnCode.isSuccess(returnCode)) {
-        if (total == (index + 1)) {
-          _counter = 'complete';
-          setState(() {});
-        }
+        final result = '$name:complete';
+        resultStrs[index] += result;
+        setState(() {});
       } else if (ReturnCode.isCancel(returnCode)) {
-        _counter = 'cancel';
+        final result = '$name:cancel';
+        resultStrs[index] += result;
         setState(() {});
       } else {
-        _counter = 'error';
+        final result = '$name:error';
+        resultStrs[index] += result;
         setState(() {});
       }
     });
@@ -76,9 +82,21 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Text(
-              _counter,
-              style: Theme.of(context).textTheme.headline4,
+            Container(
+              color: Colors.white,
+              height: 200,
+              child: ListView(
+                children: resultStrs
+                    .map((e) => Text(
+                          e,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 16,
+                          ),
+                          textAlign: TextAlign.center,
+                        ))
+                    .toList(),
+              ),
             ),
             InkWell(
               onTap: openFileA,
